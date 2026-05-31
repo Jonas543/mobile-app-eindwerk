@@ -12,12 +12,9 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { Picker } from "@react-native-picker/picker";
 
-const API_TOKEN = "JOUW_WEBFLOW_TOKEN_HIER";
-const SITE_ID = "JOUW_SITE_ID_HIER";
-
-const PRODUCTS_URL = `https://api.webflow.com/v2/sites/${SITE_ID}/products`;
-const NEWS_URL = `https://api.webflow.com/v2/sites/${SITE_ID}/collections/JOUW_NIEUWS_COLLECTION_ID/items`;
-const CAMPUSES_URL = `https://api.webflow.com/v2/sites/${SITE_ID}/collections/JOUW_CAMPUS_COLLECTION_ID/items`;
+import NewsCard from "../components/NewsCard";
+import CampusCard from "../components/CampusCard";
+import ProductCard from "../components/ProductCard";
 
 const campusFilters = [
   "All",
@@ -31,7 +28,12 @@ const campusFilters = [
   "Verpleegkunde",
 ];
 
-const newsFilters = ["All", "Campusnieuws", "Evenementen", "Studieaanbod"];
+const newsFilters = [
+    "All", 
+    "Campusnieuws", 
+    "Evenementen", 
+    "Studieaanbod"
+];
 
 const productFilters = [
   "All",
@@ -66,46 +68,6 @@ const dummyCampuses = [
     color: "#F5A400",
     description:
       "Campus BA STASSART richt zich op opleidingen rond welzijn, zorg en begeleiding.",
-  },
-  {
-    id: "4",
-    name: "BA Pitzemburg",
-    focus: "Kennis & Onderzoek",
-    color: "#A63494",
-    description:
-      "Campus BA PITZEMBURG biedt uitdagende theoretische opleidingen rond wetenschap, talen en onderzoek.",
-  },
-  {
-    id: "5",
-    name: "BA Nekkerspoel",
-    focus: "Werken & Leren",
-    color: "#D8E600",
-    description:
-      "Campus BA NEKKERSPOEL combineert praktijk en theorie in opleidingen gericht op werk of verdere studies.",
-  },
-  {
-    id: "6",
-    name: "BA De Beemden",
-    focus: "Buiten-gewoon leren",
-    color: "#10BBD7",
-    description:
-      "Campus BA DE BEEMDEN biedt een veilige en ondersteunende leeromgeving.",
-  },
-  {
-    id: "7",
-    name: "BA Caputsteen",
-    focus: "Integraal & Creatief",
-    color: "#006DB6",
-    description:
-      "Campus BA CAPUTSTEEN stimuleert creativiteit, samenwerking en talentontwikkeling.",
-  },
-  {
-    id: "8",
-    name: "BA Botaniek",
-    focus: "Gezondheid & Wetenschap",
-    color: "#E84D9B",
-    description:
-      "Campus BA BOTANIEK biedt moderne opleidingen binnen gezondheid, wetenschappen en technologie.",
   },
 ];
 
@@ -177,75 +139,42 @@ const HomeScreen = ({ navigation }) => {
   const [selectedProductCategory, setSelectedProductCategory] =
     useState("All");
 
-  useEffect(() => {
-    fetch(CAMPUSES_URL, {
-      headers: { Authorization: `Bearer ${API_TOKEN}` },
+useEffect(() => {
+  fetch(
+    "https://api.webflow.com/v2/collections/6a188ee360a7e47ef5184883/items",
+    {
+      headers: {
+        Authorization:
+          "Bearer 4acab2b39795a67741b5d7979a67c65dd78904819d19151558cc7877f882c0a6",
+      },
+    }
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      const fetchedCampuses = (data.items || []).map((item) => {
+        const fieldData = item.fieldData || {};
+
+        return {
+          id: item.id,
+          name: fieldData.name || "Campus",
+          focus: fieldData.focus || "All",
+          image: fieldData.afbeelding?.url || "",
+          address: fieldData.adres || "",
+          intro: fieldData.intro || "",
+          description: fieldData.beschrijving || "",
+          color: fieldData.kleurcode || "#82C51B",
+          email: fieldData.mailaddress || "",
+          phone: fieldData.telefoonnummer || "",
+          mapImage: fieldData.map?.url || "",
+        };
+      });
+
+      setCampuses(fetchedCampuses);
     })
-      .then((res) => res.json())
-      .then((data) => {
-        const mapped = (data.items || []).map((item) => {
-          const f = item.fieldData || {};
-          return {
-            id: item.id,
-            name: f.name || "Campus",
-            focus: f.focus || "All",
-            description: f.intro || f.beschrijving || "",
-            color: f.kleur || "#82C51B",
-            image: f.afbeelding?.url ? { uri: f.afbeelding.url } : null,
-          };
-        });
-
-        if (mapped.length > 0) setCampuses(mapped);
-      })
-      .catch(() => {});
-
-    fetch(NEWS_URL, {
-      headers: { Authorization: `Bearer ${API_TOKEN}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const mapped = (data.items || []).map((item) => {
-          const f = item.fieldData || {};
-          return {
-            id: item.id,
-            title: f.name || f.title || "Nieuws",
-            category: f.categorie || "Campusnieuws",
-            intro: f.intro || "",
-            image: f.afbeelding?.url || f.image?.url || "",
-            content: f.inhoud || "",
-          };
-        });
-
-        if (mapped.length > 0) setNews(mapped);
-      })
-      .catch(() => {});
-
-    fetch(PRODUCTS_URL, {
-      headers: { Authorization: `Bearer ${API_TOKEN}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const mapped = (data.items || []).map((item) => {
-          const product = item.product || {};
-          const f = product.fieldData || {};
-          const imageUrl = item?.skus?.[0]?.fieldData?.["main-image"]?.url;
-
-          return {
-            id: product.id || item.id,
-            title: f.name || "Product",
-            category: "All",
-            description: f.description || f.subtitle || "",
-            price: (
-              (item?.skus?.[0]?.fieldData?.price?.value || 0) / 100
-            ).toFixed(2),
-            image: imageUrl || "",
-          };
-        });
-
-        if (mapped.length > 0) setProducts(mapped);
-      })
-      .catch(() => {});
-  }, []);
+    .catch((error) =>
+      console.error("Error fetching campuses:", error)
+    );
+}, []);
 
   const filteredCampuses = useMemo(() => {
     if (selectedCampusFocus === "All") return campuses;
@@ -322,17 +251,13 @@ const HomeScreen = ({ navigation }) => {
           />
 
           {filteredCampuses.map((campus) => (
-            <TouchableOpacity
+            <CampusCard
               key={campus.id}
-              style={styles.campusCard}
+              name={campus.name}
+              description={campus.description}
+              color={campus.color}
               onPress={() => navigation.navigate("CampusDetail", campus)}
-            >
-              <Text style={[styles.campusTitle, { color: campus.color }]}>
-                {campus.name}
-              </Text>
-              <Text style={styles.campusDescription}>{campus.description}</Text>
-              <Text style={styles.cardLink}>ontdek de campus →</Text>
-            </TouchableOpacity>
+            />
           ))}
         </View>
 
@@ -373,21 +298,14 @@ const HomeScreen = ({ navigation }) => {
               )}
 
               {filteredNews.map((item) => (
-                <TouchableOpacity
+                <NewsCard
                   key={item.id}
-                  style={styles.newsCard}
+                  image={item.image}
+                  title={item.title}
+                  intro={item.intro}
+                  category={item.category}
                   onPress={() => navigation.navigate("BlogDetail", item)}
-                >
-                  {!!item.image && (
-                    <Image
-                      source={{ uri: item.image }}
-                      style={styles.cardImage}
-                    />
-                  )}
-                  <Text style={styles.badge}>{item.category}</Text>
-                  <Text style={styles.newsTitle}>{item.title}</Text>
-                  <Text style={styles.newsIntro}>{item.intro}</Text>
-                </TouchableOpacity>
+                />
               ))}
             </>
           )}
@@ -404,60 +322,18 @@ const HomeScreen = ({ navigation }) => {
               )}
 
               {filteredProducts.map((item) => (
-                <TouchableOpacity
+                <ProductCard
                   key={item.id}
-                  style={styles.newsCard}
+                  image={item.image}
+                  title={item.title}
+                  description={item.description}
+                  category={item.category}
+                  price={item.price}
                   onPress={() => navigation.navigate("ProductDetail", item)}
-                >
-                  {!!item.image && (
-                    <Image
-                      source={{ uri: item.image }}
-                      style={styles.cardImage}
-                    />
-                  )}
-                  <Text style={styles.badge}>{item.category}</Text>
-                  <Text style={styles.newsTitle}>{item.title}</Text>
-                  <Text style={styles.newsIntro}>{item.description}</Text>
-                  <Text style={styles.price}>€ {item.price}</Text>
-                </TouchableOpacity>
+                />
               ))}
             </>
           )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.bigTitleLeft}>Real stories. Real results.</Text>
-
-          <Testimonial
-            text="Dankzij de begeleiding op campus Zandpoort heb ik echt ontdekt waar mijn talenten liggen."
-            name="Noah Vermeulen"
-          />
-          <Testimonial
-            text="Busleyden gaf mij de kans om mezelf te ontwikkelen en nieuwe vrienden te maken."
-            name="Sarah Claes"
-          />
-          <Testimonial
-            text="Op BA Botaniek voelde ik mij meteen thuis. De leerkrachten stonden altijd klaar om te helpen."
-            name="Lina Peeters"
-          />
-        </View>
-
-        <View style={styles.greySection}>
-          <Text style={styles.bigTitle}>
-            Vragen? Neem gerust contact met ons op.
-          </Text>
-
-          <View style={styles.contactCard}>
-            <Text style={styles.icon}>✉</Text>
-            <Text style={styles.contactLabel}>Email</Text>
-            <Text style={styles.greenLink}>info@busleyden.be</Text>
-          </View>
-
-          <View style={styles.contactCard}>
-            <Text style={styles.icon}>☎</Text>
-            <Text style={styles.contactLabel}>Telefoon</Text>
-            <Text style={styles.greenLink}>+32 15 12 34 56</Text>
-          </View>
         </View>
 
         <View style={styles.footer}>
@@ -531,13 +407,6 @@ const Stat = ({ number, label }) => (
   <View style={styles.statBlock}>
     <Text style={styles.statNumber}>{number}</Text>
     <Text style={styles.statLabel}>{label}</Text>
-  </View>
-);
-
-const Testimonial = ({ text, name }) => (
-  <View style={styles.testimonial}>
-    <Text style={styles.quote}>“{text}”</Text>
-    <Text style={styles.quoteName}>{name}</Text>
   </View>
 );
 
@@ -629,83 +498,6 @@ const styles = StyleSheet.create({
   },
   subtitle: { fontSize: 28, color: "#777", marginBottom: 60 },
 
-  pickerWrapper: {
-    marginBottom: 34,
-  },
-  pickerLabel: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#111",
-    marginBottom: 10,
-  },
-  pickerBox: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    overflow: "hidden",
-  },
-  picker: {
-    color: "#111",
-    height: 56,
-  },
-
-  mainTabs: {
-    backgroundColor: "#d9d9d9",
-    marginBottom: 40,
-  },
-  mainTab: {
-    paddingVertical: 22,
-    paddingHorizontal: 34,
-  },
-  mainTabActive: {
-    backgroundColor: "#82C51B",
-  },
-  mainTabText: {
-    fontSize: 24,
-    color: "#111",
-  },
-  mainTabTextActive: {
-    color: "#fff",
-    fontWeight: "700",
-  },
-
-  campusCard: {
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 44,
-    marginBottom: 44,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    shadowColor: "#000",
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    elevation: 5,
-  },
-  campusTitle: {
-    fontSize: 34,
-    fontWeight: "800",
-    textAlign: "center",
-    marginBottom: 28,
-  },
-  campusDescription: {
-    fontSize: 26,
-    color: "#777",
-    lineHeight: 40,
-    textAlign: "center",
-  },
-  cardLink: {
-    marginTop: 42,
-    textAlign: "center",
-    fontSize: 24,
-    color: "#777",
-    textDecorationLine: "underline",
-  },
-
-  statBlock: { marginTop: 50 },
-  statNumber: { fontSize: 42, color: "#111", marginBottom: 16 },
-  statLabel: { fontSize: 28, color: "#777", letterSpacing: 2 },
-
   fullGreenButton: {
     backgroundColor: "#82C51B",
     borderRadius: 999,
@@ -723,75 +515,41 @@ const styles = StyleSheet.create({
   },
   outlineText: { color: "#fff", fontSize: 24, fontWeight: "700" },
 
+  pickerWrapper: { marginBottom: 34 },
+  pickerLabel: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#111",
+    marginBottom: 10,
+  },
+  pickerBox: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    overflow: "hidden",
+  },
+  picker: { color: "#111", height: 56 },
+
+  mainTabs: {
+    backgroundColor: "#d9d9d9",
+    marginBottom: 40,
+  },
+  mainTab: { paddingVertical: 22, paddingHorizontal: 34 },
+  mainTabActive: { backgroundColor: "#82C51B" },
+  mainTabText: { fontSize: 24, color: "#111" },
+  mainTabTextActive: { color: "#fff", fontWeight: "700" },
+
+  statBlock: { marginTop: 50 },
+  statNumber: { fontSize: 42, color: "#111", marginBottom: 16 },
+  statLabel: { fontSize: 28, color: "#777", letterSpacing: 2 },
+
   centerText: {
     fontSize: 28,
     color: "#777",
     lineHeight: 44,
     textAlign: "center",
     marginBottom: 54,
-  },
-
-  newsCard: {
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    paddingBottom: 28,
-    marginBottom: 44,
-    overflow: "hidden",
-  },
-  cardImage: {
-    width: "100%",
-    height: 280,
-  },
-  badge: {
-    alignSelf: "flex-start",
-    marginTop: 24,
-    marginLeft: 24,
-    backgroundColor: "#e5e5e5",
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-    fontSize: 18,
-    textTransform: "uppercase",
-  },
-  newsTitle: {
-    fontSize: 30,
-    textAlign: "center",
-    marginTop: 28,
-    color: "#111",
-  },
-  newsIntro: {
-    fontSize: 24,
-    lineHeight: 36,
-    color: "#555",
-    textAlign: "center",
-    marginTop: 18,
-    paddingHorizontal: 22,
-  },
-  price: {
-    fontSize: 26,
-    fontWeight: "800",
-    textAlign: "center",
-    marginTop: 18,
-    color: "#82C51B",
-  },
-
-  testimonial: { marginTop: 60 },
-  quote: { fontSize: 30, lineHeight: 46, color: "#111" },
-  quoteName: { fontSize: 26, fontWeight: "800", marginTop: 26 },
-
-  contactCard: {
-    backgroundColor: "#fff",
-    borderRadius: 22,
-    padding: 50,
-    alignItems: "center",
-    marginBottom: 60,
-  },
-  icon: { color: "#82C51B", fontSize: 58, marginBottom: 30 },
-  contactLabel: { fontSize: 28, marginBottom: 16 },
-  greenLink: {
-    color: "#82C51B",
-    fontSize: 28,
-    textDecorationLine: "underline",
   },
 
   footer: { padding: 36, backgroundColor: "#fff" },
