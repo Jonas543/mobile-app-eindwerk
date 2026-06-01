@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -54,10 +54,10 @@ const campusFilters = [
 ];
 
 const newsFilters = [
-    "All", 
-    "Campusnieuws", 
-    "Evenementen", 
-    "Studieaanbod"
+  "All", 
+  "Campusnieuws", 
+  "Evenementen", 
+  "Studieaanbod"
 ];
 
 const productFilters = [
@@ -70,184 +70,176 @@ const productFilters = [
 ];
 
 const HomeScreen = ({ navigation }) => {
-const [menuOpen, setMenuOpen] = useState(false);
-const [darkMode, setDarkMode] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
-const [campuses, setCampuses] = useState([]);
-const [news, setNews] = useState([]);
-const [products, setProducts] = useState([]);
+  const [campuses, setCampuses] = useState([]);
+  const [news, setNews] = useState([]);
+  const [products, setProducts] = useState([]);
 
-const [selectedCampusFocus, setSelectedCampusFocus] = useState("All");
-const [mainTab, setMainTab] = useState("All");
-const [selectedNewsCategory, setSelectedNewsCategory] = useState("All");
-const [newsSearchQuery, setNewsSearchQuery] = useState("");
-const [newsSortOption, setNewsSortOption] = useState("Naam: A/Z");
+  const [selectedCampusFocus, setSelectedCampusFocus] = useState("All");
+  const [mainTab, setMainTab] = useState("All");
 
-const [selectedProductCategory, setSelectedProductCategory] =
-  useState("All");
+  const [selectedNewsCategory, setSelectedNewsCategory] = useState("All");
+  const [newsSearchQuery, setNewsSearchQuery] = useState("");
+  const [newsSortOption, setNewsSortOption] = useState("name-asc");
 
-useEffect(() => {
-  fetch(
-    "https://api.webflow.com/v2/collections/6a188ee360a7e47ef5184883/items",
-    {
-      headers: {
-        Authorization:
-          "Bearer 4acab2b39795a67741b5d7979a67c65dd78904819d19151558cc7877f882c0a6",
-      },
+  const [selectedProductCategory, setSelectedProductCategory] = useState("All");
+
+  useEffect(() => {
+    fetch(
+      "https://api.webflow.com/v2/collections/6a188ee360a7e47ef5184883/items", 
+      {
+        headers: {
+          Authorization:
+            "Bearer 4acab2b39795a67741b5d7979a67c65dd78904819d19151558cc7877f882c0a6",
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        const fetchedCampuses = (data.items || []).map((item) => {
+          const fieldData = item.fieldData || {};
+
+          return {
+            id: item.id,
+            name: fieldData.name || "Campus",
+            focus: focusNames[fieldData.focus] || fieldData.focus || "All",
+            image: fieldData.afbeelding?.url || "",
+            address: fieldData.adres || "",
+            intro: fieldData.intro || "",
+            description: fieldData.beschrijving || "",
+            color: fieldData.kleurcode || "#82C51B",
+            email: fieldData.mailaddress || "",
+            phone: fieldData.telefoonnummer || "",
+            mapImage: fieldData.map?.url || "",
+          };
+        });
+
+        setCampuses(fetchedCampuses);
+      })
+      .catch((error) => console.error("Error fetching campuses:", error));
+
+    fetch(
+      "https://api.webflow.com/v2/collections/6a186551a5f68864d972dbe1/items", 
+      {
+        headers: {
+          Authorization:
+            "Bearer 4acab2b39795a67741b5d7979a67c65dd78904819d19151558cc7877f882c0a6",
+        },
     }
   )
-    .then((res) => res.json())
-    .then((data) => {
-      const fetchedCampuses = (data.items || []).map((item) => {
-        const fieldData = item.fieldData || {};
+      .then((res) => res.json())
+      .then((data) => {
+        const fetchedNews = (data.items || []).map((item) => {
+          const fieldData = item.fieldData || {};
 
-        return {
-          id: item.id,
-          name: fieldData.name || "Campus",
-          focus: focusNames[fieldData.focus] || fieldData.focus || "All",
-          image: fieldData.afbeelding?.url || "",
-          address: fieldData.adres || "",
-          intro: fieldData.intro || "",
-          description: fieldData.beschrijving || "",
-          color: fieldData.kleurcode || "#82C51B",
-          email: fieldData.mailaddress || "",
-          phone: fieldData.telefoonnummer || "",
-          mapImage: fieldData.map?.url || "",
-        };
-      });
+          return {
+            id: item.id,
+            title: fieldData.name || "Nieuws",
+            intro: fieldData.intro || "",
+            image: fieldData.afbeelding?.url || "",
+            date: fieldData.datum || "",
+            category:
+              newsCategoryNames[fieldData.categorie?.toLowerCase()] ||
+              fieldData.categorie ||
+              "All",
+            content: fieldData.inhoud || "",
+          };
+        });
 
-      setCampuses(fetchedCampuses);
-    })
-    .catch((error) => console.error("Error fetching campuses:", error));
+        setNews(fetchedNews);
+      })
+      .catch((error) => console.error("Error fetching news:", error));
 
-  fetch(
-    "https://api.webflow.com/v2/collections/6a186551a5f68864d972dbe1/items",
-    {
-      headers: {
-        Authorization:
-          "Bearer 4acab2b39795a67741b5d7979a67c65dd78904819d19151558cc7877f882c0a6",
-      },
+    fetch(
+      "https://api.webflow.com/v2/sites/6a163437d2a2662346873eb4/products", 
+      {
+        headers: {
+          Authorization:
+            "Bearer 4acab2b39795a67741b5d7979a67c65dd78904819d19151558cc7877f882c0a6",
+        },
     }
   )
-    .then((res) => res.json())
-    .then((data) => {
-      const fetchedNews = (data.items || []).map((item) => {
-        const fieldData = item.fieldData || {};
+      .then((res) => res.json())
+      .then((data) => {
+        const fetchedProducts = (data.items || []).map((item) => {
+          const product = item.product || {};
+          const fieldData = product.fieldData || {};
+          const skuData = item.skus?.[0]?.fieldData || {};
 
-        return {
-          id: item.id,
-          title: fieldData.name || "Nieuws",
-          intro: fieldData.intro || "",
-          image: fieldData.afbeelding?.url || "",
-          date: fieldData.datum || "",
-          category:
-            newsCategoryNames[fieldData.categorie?.toLowerCase()] ||
-            fieldData.categorie ||
-            "All",
-          content: fieldData.inhoud || "",
-        };
-      });
-
-      setNews(fetchedNews);
-    })
-    .catch((error) => console.error("Error fetching news:", error));
-
-  fetch(
-    "https://api.webflow.com/v2/sites/6a163437d2a2662346873eb4/products",
-    {
-      headers: {
-        Authorization:
-          "Bearer 4acab2b39795a67741b5d7979a67c65dd78904819d19151558cc7877f882c0a6",
-      },
-    }
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      const fetchedProducts = (data.items || []).map((item) => {
-        const product = item.product || {};
-        const fieldData = product.fieldData || {};
-        const skuData = item.skus?.[0]?.fieldData || {};
-
-        const firstCategoryId = Array.isArray(fieldData.category)
+          const firstCategoryId = Array.isArray(fieldData.category)
             ? fieldData.category[0]
             : fieldData.category;
 
-        return {
-          id: product.id || item.id,
-          title: fieldData.name || "Product",
-          description: fieldData.description || "",
-          image:
-            fieldData["main-image"]?.url ||
-            skuData["main-image"]?.url ||
-            "",
-          price: ((skuData.price?.value || 0) / 100).toFixed(2),
-          category:
-            productCategoryNames[firstCategoryId?.toLowerCase()] ||
-            firstCategoryId ||
-            "All",
-        };
-      });
+          return {
+            id: product.id || item.id,
+            title: fieldData.name || "Product",
+            description: fieldData.description || "",
+            image:
+              fieldData["main-image"]?.url ||
+              skuData["main-image"]?.url ||
+              "",
+            price: ((skuData.price?.value || 0) / 100).toFixed(2),
+            category:
+              productCategoryNames[firstCategoryId?.toLowerCase()] ||
+              firstCategoryId ||
+              "All",
+          };
+        });
 
-      setProducts(fetchedProducts);
-    })
-    .catch((error) => console.error("Error fetching products:", error));
-}, []);
+        setProducts(fetchedProducts);
+      })
+      .catch((error) => console.error("Error fetching products:", error));
+  }, []);
 
-  const filteredCampuses = useMemo(() => {
-    if (selectedCampusFocus === "All") return campuses;
-    return campuses.filter((campus) => campus.focus === selectedCampusFocus);
-  }, [campuses, selectedCampusFocus]);
+  const filteredCampuses = campuses.filter(
+    (campus) =>
+      selectedCampusFocus === "All" || campus.focus === selectedCampusFocus
+  );
 
-  const filteredNews = useMemo(() => {
-  let result = [...news];
-
-  if (selectedNewsCategory !== "All") {
-    result = result.filter(
-      (item) =>
-        String(item.category).toLowerCase().trim() ===
-        String(selectedNewsCategory).toLowerCase().trim()
-    );
-  }
-
-  if (newsSearchQuery.trim() !== "") {
-    result = result.filter((item) =>
+  const filteredNews = news.filter(
+    (item) =>
+      (selectedNewsCategory === "All" ||
+        item.category === selectedNewsCategory) &&
       item.title.toLowerCase().includes(newsSearchQuery.toLowerCase())
-    );
-  }
+  );
 
-  result.sort((a, b) => {
-    if (newsSortOption === "name-A/Z") {
-      return a.title.localeCompare(b.title);
-    }
-
-    if (newsSortOption === "name-Z/A") {
-      return b.title.localeCompare(a.title);
-    }
-
+  const sortedNews = [...filteredNews].sort((a, b) => {
+    if (newsSortOption === "name-asc") return a.title.localeCompare(b.title);
+    if (newsSortOption === "name-desc") return b.title.localeCompare(a.title);
     return 0;
   });
 
-  return result;
-}, [news, selectedNewsCategory, newsSearchQuery, newsSortOption]);
+  const visibleNews = mainTab === "Nieuws" ? sortedNews : news;
 
-  const filteredProducts = useMemo(() => {
-    if (selectedProductCategory === "All") return products;
-    return products.filter((item) => item.category === selectedProductCategory);
-  }, [products, selectedProductCategory]);
+  const filteredProducts = products.filter(
+    (item) =>
+      selectedProductCategory === "All" ||
+      item.category === selectedProductCategory
+  );
+
+  const visibleProducts = mainTab === "Producten" ? filteredProducts : products;
 
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
 
-      <View style={styles.navbar}>
-        <TouchableOpacity style={styles.ctaButton}>
-          <Text style={styles.ctaText}>Inschrijven</Text>
-        </TouchableOpacity>
+<View style={styles.navbar}>
+  <Image
+    source={require("../assets/logo.png")}
+    style={styles.headerLogo}
+  />
 
-        <TouchableOpacity onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={styles.hamburger}>{menuOpen ? "×" : "☰"}</Text>
-        </TouchableOpacity>
-      </View>
+  <TouchableOpacity
+    onPress={() => setMenuOpen(!menuOpen)}
+    hitSlop={20}
+  >
+    <Text style={styles.hamburger}>
+      {menuOpen ? "×" : "☰"}
+    </Text>
+  </TouchableOpacity>
+</View>
 
       {menuOpen && (
         <View style={styles.menu}>
@@ -255,9 +247,11 @@ useEffect(() => {
           <Text style={styles.menuItem}>Studiezoeker</Text>
           <Text style={styles.menuItem}>Campussen</Text>
           <Text style={styles.menuItem}>Nieuws</Text>
+
           <TouchableOpacity onPress={() => navigation.navigate("Shop")}>
             <Text style={styles.menuItem}>Webshop</Text>
           </TouchableOpacity>
+
           <TouchableOpacity onPress={() => navigation.navigate("Game")}>
             <Text style={styles.menuItem}>Mini-game</Text>
           </TouchableOpacity>
@@ -272,6 +266,7 @@ useEffect(() => {
             }}
             style={styles.heroImage}
           />
+
           <View style={styles.overlay} />
 
           <View style={styles.heroContent}>
@@ -336,34 +331,42 @@ useEffect(() => {
           />
 
           {(mainTab === "All" || mainTab === "Nieuws") && (
-  <>
-    {mainTab === "Nieuws" && (
-      <>
-        <TextInput
-          placeholder="Zoek nieuws..."
-          style={styles.searchInput}
-          value={newsSearchQuery}
-          onChangeText={setNewsSearchQuery}
-          placeholderTextColor="#777"
-        />
+            <>
+              {mainTab === "Nieuws" && (
+                <>
+                  <TextInput
+                    placeholder="Zoek nieuws..."
+                    style={styles.searchInput}
+                    value={newsSearchQuery}
+                    onChangeText={setNewsSearchQuery}
+                    placeholderTextColor="#777"
+                  />
 
-        <FilterPicker
-          label="Filter nieuws"
-          options={newsFilters}
-          selected={selectedNewsCategory}
-          onSelect={setSelectedNewsCategory}
-        />
+                  <FilterPicker
+                    label="Filter nieuws"
+                    options={newsFilters}
+                    selected={selectedNewsCategory}
+                    onSelect={setSelectedNewsCategory}
+                  />
 
-        <FilterPicker
-          label="Sorteer nieuws"
-          options={["Naam: A/Z", "Naam: Z/A"]}
-          selected={newsSortOption}
-          onSelect={setNewsSortOption}
-        />
-      </>
-    )}
+                  <View style={styles.pickerWrapper}>
+                    <Text style={styles.pickerLabel}>Sorteer nieuws</Text>
+                    <View style={styles.pickerBox}>
+                      <Picker
+                        selectedValue={newsSortOption}
+                        onValueChange={setNewsSortOption}
+                        style={styles.picker}
+                        dropdownIconColor="#111"
+                      >
+                        <Picker.Item label="Naam: A/Z" value="name-asc" />
+                        <Picker.Item label="Naam: Z/A" value="name-desc" />
+                      </Picker>
+                    </View>
+                  </View>
+                </>
+              )}
 
-              {filteredNews.map((item) => (
+              {visibleNews.map((item) => (
                 <NewsCard
                   key={item.id}
                   image={item.image}
@@ -387,7 +390,7 @@ useEffect(() => {
                 />
               )}
 
-              {filteredProducts.map((item) => (
+              {visibleProducts.map((item) => (
                 <ProductCard
                   key={item.id}
                   image={item.image}
@@ -481,13 +484,12 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: 40 },
 
   navbar: {
-    height: 96,
+    height: 120,
     paddingHorizontal: 28,
     backgroundColor: "#fff",
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: 22,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
@@ -509,7 +511,7 @@ const styles = StyleSheet.create({
   },
   menuItem: { fontSize: 28, paddingVertical: 18, color: "#111" },
 
-  hero: { height: 720, position: "relative" },
+  hero: { height: 720, position: "relative", marginTop: 10 },
   heroImage: { width: "100%", height: "100%" },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -520,7 +522,6 @@ const styles = StyleSheet.create({
     left: 36,
     right: 36,
     bottom: 44,
-    marginTop: 120,
   },
   kicker: { color: "#fff", fontSize: 20, marginBottom: 42 },
   heroTitle: {
@@ -619,6 +620,18 @@ const styles = StyleSheet.create({
     marginBottom: 54,
   },
 
+  searchInput: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    fontSize: 20,
+    color: "#111",
+    marginBottom: 24,
+  },
+
   footer: { padding: 36, backgroundColor: "#fff" },
   footerHeading: {
     fontSize: 22,
@@ -656,16 +669,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  searchInput: {
-  backgroundColor: "#fff",
-  borderRadius: 16,
-  borderWidth: 1,
-  borderColor: "#ddd",
-  paddingVertical: 16,
-  paddingHorizontal: 18,
-  fontSize: 20,
-  color: "#111",
-  marginBottom: 24,
+headerLogo: {
+  width: 250,
+  height: 250,
+  resizeMode: "contain",
 },
 });
 
