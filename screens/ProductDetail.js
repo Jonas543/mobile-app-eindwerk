@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Button,
 } from "react-native";
 
 const ProductDetail = ({ route }) => {
@@ -59,9 +60,13 @@ const ProductDetail = ({ route }) => {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.addButton}>
-            <Text style={styles.addButtonText}>Add to Cart</Text>
-          </TouchableOpacity>
+          <View style={styles.addButton}>
+            <Button
+                title="Add to Cart"
+                onPress={() => {}}
+                color="#86bc25"
+            />
+            </View>
         </View>
 
         <Text style={styles.total}>Totaal: € {total.toFixed(2)}</Text>

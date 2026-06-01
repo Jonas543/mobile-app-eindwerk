@@ -7,6 +7,8 @@ import HomeScreen from "./screens/HomeScreen.js";
 import ProductDetail from "./screens/ProductDetail.js";
 import BlogDetail from "./screens/BlogDetail.js";
 import CampusDetail from "./screens/CampusDetail.js";
+import ShopScreen from "./screens/ShopScreen.js";
+import GameScreen from "./screens/GameScreen.js";
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +38,18 @@ export default function App() {
           name="CampusDetail"
           component={CampusDetail}
           options={{ title: "Campus" }}
+        />
+
+        <Stack.Screen 
+          name="Shop" 
+          component={ShopScreen} 
+          options={{ title: "Webshop" }} 
+        />
+
+        <Stack.Screen
+          name="Game"
+          component={GameScreen}
+          options={{ title: "Mini-game" }}
         />
       </Stack.Navigator>
     </NavigationContainer>

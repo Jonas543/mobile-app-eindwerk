@@ -16,6 +16,31 @@ import NewsCard from "../components/NewsCard";
 import CampusCard from "../components/CampusCard";
 import ProductCard from "../components/ProductCard";
 
+const focusNames = {
+  "88ec9ca59465b6ce24bc748b10d14fca": "Gezondheid & Wetenschap",
+  "5e1e792fc9c6b3128d837df73c13a76c": "Integraal & Creatief",
+  "8bb16caeccb3702cb5e4d2e3a903fb3b": "Buiten-gewoon leren",
+  "d4e2a57ff87b06f5f46613220b5e41bc": "Werken & Leren",
+  "7f364158293975f1b1c33dbf827fc842": "Kennis & Onderzoek",
+  "6b313163d7e90294962d7a4a578e52d9": "Mens & Welzijn",
+  "cfd73ad5b839c6d781e2230dde26ada3": "IT & Ondernemen",
+  "69b01ffbc3054910fea931d34f73887f": "Verpleegkunde",
+};
+
+const newsCategoryNames = {
+  "64e7fbe103233edd59aaa99085bb0d93": "Campusnieuws",
+  "c834348a3686fe45ee115dcc0a65d11c": "Evenementen",
+  "ccc96613e319795160d3af58341a8402": "Studieaanbod",
+};
+
+const productCategoryNames = {
+  "6a18c8e3a7f7cb2ed75e7bbd": "Cadeaus",
+  "6a18c8b66c0dc2b32f0d42c8": "Kleding",
+  "6a18c8cd88301fbc4270314c": "Schoolmateriaal",
+  "6a18c8c2c59626423713aacd": "Accessoires",
+  "6a18c8d97ec60f5606ca2f8c": "Sport",
+};
+
 const campusFilters = [
   "All",
   "Gezondheid & Wetenschap",
@@ -44,100 +69,22 @@ const productFilters = [
   "Kleding",
 ];
 
-const dummyCampuses = [
-  {
-    id: "1",
-    name: "BA Basisverpleegkunde",
-    focus: "Verpleegkunde",
-    color: "#E84D9B",
-    description:
-      "Campus BA BASISVERPLEEGKUNDE bereidt leerlingen voor op een carrière binnen de gezondheidszorg.",
-  },
-  {
-    id: "2",
-    name: "BA Zandpoort",
-    focus: "IT & Ondernemen",
-    color: "#E93223",
-    description:
-      "Campus BA ZANDPOORT combineert technologie, economie en ondernemerschap in moderne opleidingen.",
-  },
-  {
-    id: "3",
-    name: "BA Stassart",
-    focus: "Mens & Welzijn",
-    color: "#F5A400",
-    description:
-      "Campus BA STASSART richt zich op opleidingen rond welzijn, zorg en begeleiding.",
-  },
-];
-
-const dummyNews = [
-  {
-    id: "n1",
-    title: "Nieuwe STEM-labo’s geopend",
-    category: "Campusnieuws",
-    image: "https://images.unsplash.com/photo-1581093458791-9d42ccfda3f4",
-    intro:
-      "Campus Botaniek heeft haar gloednieuwe STEM-labo’s officieel geopend.",
-  },
-  {
-    id: "n2",
-    title: "Infodag op onze campussen",
-    category: "Evenementen",
-    image: "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b",
-    intro:
-      "Tijdens onze infodag zetten alle campussen hun deuren open voor toekomstige leerlingen.",
-  },
-  {
-    id: "n3",
-    title: "Ontdek onze studiezoeker",
-    category: "Studieaanbod",
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3",
-    intro:
-      "Met de nieuwe digitale studiezoeker vind je sneller de richting die bij jou past.",
-  },
-];
-
-const dummyProducts = [
-  {
-    id: "p1",
-    title: "BA Lippenbalsem",
-    category: "Cadeaus",
-    price: "4.00",
-    image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348",
-    description: "Verzorgende lippenbalsem met subtiele BA branding.",
-  },
-  {
-    id: "p2",
-    title: "BA Thermofles",
-    category: "Accessoires",
-    price: "29.00",
-    image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8",
-    description: "Duurzame thermofles die dranken warm of koud houdt.",
-  },
-  {
-    id: "p3",
-    title: "BA Sweater met kap",
-    category: "Kleding",
-    price: "49.00",
-    image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7",
-    description: "Moderne hoodie met zachte binnenvoering en BA branding.",
-  },
-];
-
 const HomeScreen = ({ navigation }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+const [menuOpen, setMenuOpen] = useState(false);
+const [darkMode, setDarkMode] = useState(false);
 
-  const [campuses, setCampuses] = useState(dummyCampuses);
-  const [news, setNews] = useState(dummyNews);
-  const [products, setProducts] = useState(dummyProducts);
+const [campuses, setCampuses] = useState([]);
+const [news, setNews] = useState([]);
+const [products, setProducts] = useState([]);
 
-  const [selectedCampusFocus, setSelectedCampusFocus] = useState("All");
-  const [mainTab, setMainTab] = useState("All");
-  const [selectedNewsCategory, setSelectedNewsCategory] = useState("All");
-  const [selectedProductCategory, setSelectedProductCategory] =
-    useState("All");
+const [selectedCampusFocus, setSelectedCampusFocus] = useState("All");
+const [mainTab, setMainTab] = useState("All");
+const [selectedNewsCategory, setSelectedNewsCategory] = useState("All");
+const [newsSearchQuery, setNewsSearchQuery] = useState("");
+const [newsSortOption, setNewsSortOption] = useState("Naam: A/Z");
+
+const [selectedProductCategory, setSelectedProductCategory] =
+  useState("All");
 
 useEffect(() => {
   fetch(
@@ -157,7 +104,7 @@ useEffect(() => {
         return {
           id: item.id,
           name: fieldData.name || "Campus",
-          focus: fieldData.focus || "All",
+          focus: focusNames[fieldData.focus] || fieldData.focus || "All",
           image: fieldData.afbeelding?.url || "",
           address: fieldData.adres || "",
           intro: fieldData.intro || "",
@@ -171,9 +118,79 @@ useEffect(() => {
 
       setCampuses(fetchedCampuses);
     })
-    .catch((error) =>
-      console.error("Error fetching campuses:", error)
-    );
+    .catch((error) => console.error("Error fetching campuses:", error));
+
+  fetch(
+    "https://api.webflow.com/v2/collections/6a186551a5f68864d972dbe1/items",
+    {
+      headers: {
+        Authorization:
+          "Bearer 4acab2b39795a67741b5d7979a67c65dd78904819d19151558cc7877f882c0a6",
+      },
+    }
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      const fetchedNews = (data.items || []).map((item) => {
+        const fieldData = item.fieldData || {};
+
+        return {
+          id: item.id,
+          title: fieldData.name || "Nieuws",
+          intro: fieldData.intro || "",
+          image: fieldData.afbeelding?.url || "",
+          date: fieldData.datum || "",
+          category:
+            newsCategoryNames[fieldData.categorie?.toLowerCase()] ||
+            fieldData.categorie ||
+            "All",
+          content: fieldData.inhoud || "",
+        };
+      });
+
+      setNews(fetchedNews);
+    })
+    .catch((error) => console.error("Error fetching news:", error));
+
+  fetch(
+    "https://api.webflow.com/v2/sites/6a163437d2a2662346873eb4/products",
+    {
+      headers: {
+        Authorization:
+          "Bearer 4acab2b39795a67741b5d7979a67c65dd78904819d19151558cc7877f882c0a6",
+      },
+    }
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      const fetchedProducts = (data.items || []).map((item) => {
+        const product = item.product || {};
+        const fieldData = product.fieldData || {};
+        const skuData = item.skus?.[0]?.fieldData || {};
+
+        const firstCategoryId = Array.isArray(fieldData.category)
+            ? fieldData.category[0]
+            : fieldData.category;
+
+        return {
+          id: product.id || item.id,
+          title: fieldData.name || "Product",
+          description: fieldData.description || "",
+          image:
+            fieldData["main-image"]?.url ||
+            skuData["main-image"]?.url ||
+            "",
+          price: ((skuData.price?.value || 0) / 100).toFixed(2),
+          category:
+            productCategoryNames[firstCategoryId?.toLowerCase()] ||
+            firstCategoryId ||
+            "All",
+        };
+      });
+
+      setProducts(fetchedProducts);
+    })
+    .catch((error) => console.error("Error fetching products:", error));
 }, []);
 
   const filteredCampuses = useMemo(() => {
@@ -182,9 +199,36 @@ useEffect(() => {
   }, [campuses, selectedCampusFocus]);
 
   const filteredNews = useMemo(() => {
-    if (selectedNewsCategory === "All") return news;
-    return news.filter((item) => item.category === selectedNewsCategory);
-  }, [news, selectedNewsCategory]);
+  let result = [...news];
+
+  if (selectedNewsCategory !== "All") {
+    result = result.filter(
+      (item) =>
+        String(item.category).toLowerCase().trim() ===
+        String(selectedNewsCategory).toLowerCase().trim()
+    );
+  }
+
+  if (newsSearchQuery.trim() !== "") {
+    result = result.filter((item) =>
+      item.title.toLowerCase().includes(newsSearchQuery.toLowerCase())
+    );
+  }
+
+  result.sort((a, b) => {
+    if (newsSortOption === "name-A/Z") {
+      return a.title.localeCompare(b.title);
+    }
+
+    if (newsSortOption === "name-Z/A") {
+      return b.title.localeCompare(a.title);
+    }
+
+    return 0;
+  });
+
+  return result;
+}, [news, selectedNewsCategory, newsSearchQuery, newsSortOption]);
 
   const filteredProducts = useMemo(() => {
     if (selectedProductCategory === "All") return products;
@@ -211,7 +255,12 @@ useEffect(() => {
           <Text style={styles.menuItem}>Studiezoeker</Text>
           <Text style={styles.menuItem}>Campussen</Text>
           <Text style={styles.menuItem}>Nieuws</Text>
-          <Text style={styles.menuItem}>Webshop</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("Shop")}>
+            <Text style={styles.menuItem}>Webshop</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("Game")}>
+            <Text style={styles.menuItem}>Mini-game</Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -287,15 +336,32 @@ useEffect(() => {
           />
 
           {(mainTab === "All" || mainTab === "Nieuws") && (
-            <>
-              {mainTab === "Nieuws" && (
-                <FilterPicker
-                  label="Filter nieuws"
-                  options={newsFilters}
-                  selected={selectedNewsCategory}
-                  onSelect={setSelectedNewsCategory}
-                />
-              )}
+  <>
+    {mainTab === "Nieuws" && (
+      <>
+        <TextInput
+          placeholder="Zoek nieuws..."
+          style={styles.searchInput}
+          value={newsSearchQuery}
+          onChangeText={setNewsSearchQuery}
+          placeholderTextColor="#777"
+        />
+
+        <FilterPicker
+          label="Filter nieuws"
+          options={newsFilters}
+          selected={selectedNewsCategory}
+          onSelect={setSelectedNewsCategory}
+        />
+
+        <FilterPicker
+          label="Sorteer nieuws"
+          options={["Naam: A/Z", "Naam: Z/A"]}
+          selected={newsSortOption}
+          onSelect={setNewsSortOption}
+        />
+      </>
+    )}
 
               {filteredNews.map((item) => (
                 <NewsCard
@@ -454,6 +520,7 @@ const styles = StyleSheet.create({
     left: 36,
     right: 36,
     bottom: 44,
+    marginTop: 120,
   },
   kicker: { color: "#fff", fontSize: 20, marginBottom: 42 },
   heroTitle: {
@@ -589,6 +656,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  searchInput: {
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: "#ddd",
+  paddingVertical: 16,
+  paddingHorizontal: 18,
+  fontSize: 20,
+  color: "#111",
+  marginBottom: 24,
+},
 });
 
 export default HomeScreen;
